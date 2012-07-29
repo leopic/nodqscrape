@@ -2,12 +2,12 @@
   // include parsing lib
   include('lib/simple_html_dom.php');
 
-  $company = 'wwe';
+  $companyName = 'wwe';
 
   // checking for the company name
   if(isset($_REQUEST['cp'])) {
     if($_REQUEST['cp'] === 'tna'){
-      $company = $_REQUEST['cp'];
+      $companyName = $_REQUEST['cp'];
     }
   } 
 
@@ -20,7 +20,7 @@
     $totalItems = 10;
   }
 
-  $company = file_get_html('http://www.nodq.com/' . $company);
+  $company = file_get_html('http://www.nodq.com/' . $companyName);
   // yes this is the where the news live
   $companyNews = $company->find('td[width=388] li a');
   $companyLinks = array();
@@ -31,6 +31,9 @@
   foreach($companyNews as $entry) {
     array_push($companyHeaders, $entry->plaintext);
     array_push($companyLinks, $entry->href);
+    if(count($companyLinks) == $totalItems) {
+      break;
+    }
   }
 ?>
 
@@ -40,7 +43,7 @@
   <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1"> 
-  <title>rasslin' news</title>
+  <title><?php echo strtoupper($companyName); ?> News</title>
   <link rel="shortcut icon" href="http://nodq.com/favicon.ico" type="image/x-icon">
   <link rel="icon" type="image/gif" href="http://nodq.com/favicon.gif">
   <link rel="stylesheet" href="http://code.jquery.com/mobile/1.1.1/jquery.mobile-1.1.1.min.css" />
@@ -73,9 +76,12 @@
 <?php for($i = 0; $i < $totalItems; $i++) {  ?>
     <article data-role="page" id="entry-<?php echo $i; ?>" class="news-entry" data-theme="a">
       <header data-role="header">
-        <h1><a href="#entry-0"><img src="http://nodq.com/images/nodq2012.gif" alt="NODQ.com" /></a></h1>
+        <h1><a href="#entry-0"><img src="http://nodq.com/images/nodq2012.gif" alt="NODQ.com" style="max-width: 100%;" /></a></h1>
       </header>
       <section data-role="content">
+        <?php if($i != 0) { ?>
+          <a data-rel="back" data-role="button" data-icon="back">Back</a>
+        <?php } ?>
         <h2 style="margin-bottom: -2em;"><?php echo $companyHeaders[$i]; ?></h2>
         <?php
             // individual scrapping
@@ -87,16 +93,16 @@
         ?>
         </li><!-- a lot of crazy stuff going on -->
           <?php $j = $i; ?>
-          <ul data-role="listview" data-inset="true">
             <?php if($j != ($totalItems - 1)){ ?>
-              <li data-role="list-divider">More news</li>
-            <?php } ?>
+          <ul data-role="listview" data-inset="true" style="margin-top: -7em; ">
+          <li data-role="list-divider"><?php echo strtoupper($companyName); ?> More news</li>
             <?php for($k = 0; $k < $totalItems; $k++ ) { ?>
               <?php if($j != ($totalItems - 1)) { ?>
                 <li><a data-transition="turn" href="#entry-<?php $j++; echo $j; ?>"><?php echo $companyHeaders[$j]; ?></a></li>
               <?php } ?>
             <?php } ?>
           </ul>
+            <?php } ?>
       </section>
     </article>
   <?php } ?>
